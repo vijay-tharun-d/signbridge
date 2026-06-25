@@ -10,7 +10,9 @@ A full-stack, hardware-integrated system that bridges communication between sign
 ---
 
 
+## Demo Video
 
+[![Watch the Demo](https://img.shields.io/badge/▶%20Watch%20Demo-Click%20Here-blue?style=for-the-badge)](https://github.com/user-attachments/assets/0e5f3ac9-baee-4664-9a58-be7f01a0522e)
 
 
 
