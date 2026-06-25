@@ -11,6 +11,10 @@ A full-stack, hardware-integrated system that bridges communication between sign
 
 
 
+https://github.com/user-attachments/assets/0e5f3ac9-baee-4664-9a58-be7f01a0522e
+
+
+
 
 ## ✨ Features
 
@@ -145,7 +149,8 @@ Open your browser and go to **http://localhost:5000**
 ## 🎥 Demo Video
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/2cfe54c5-76fc-4de0-b81d-41348afd6e5b" controls width="720"></video>
+  <video src="https://github.com/user-attachments/assets/0e5f3ac9-baee-4664-9a58-be7f01a0522e
+" controls width="720"></video>
 </div>
 
 > *The demo shows the robotic hand fingerspelling "HELLO" via the web interface, followed by the sign-to-text feature recognising letters from a webcam.*
