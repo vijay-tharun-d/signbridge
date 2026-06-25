@@ -5,7 +5,7 @@ A full-stack, hardware-integrated system that bridges communication between sign
 - **Sign → Text:** A webcam reads ASL hand gestures using computer vision and displays the detected letters as a live transcript.
 - **Text → Sign:** A user types (or speaks) any word or phrase, and a **physical 3D-printed robotic hand** fingerspells it back — letter by letter — using servo motors.
 
-> 🎥 **[Watch the Demo](#demo)**
+> 🎥 **[Watch the Demo](#demo-video)**
 
 ---
 
@@ -142,7 +142,7 @@ Open your browser and go to **http://localhost:5000**
 
 ---
 
-## 🎥 Demo
+## 🎥 Demo Video
 
 <div align="center">
   <video src="https://github.com/user-attachments/assets/2cfe54c5-76fc-4de0-b81d-41348afd6e5b" controls width="720"></video>
