@@ -9,6 +9,10 @@ A full-stack, hardware-integrated system that bridges communication between sign
 
 ---
 
+https://github.com/user-attachments/assets/2cfe54c5-76fc-4de0-b81d-41348afd6e5b
+
+
+
 ## ✨ Features
 
 **Sign → Text (Computer Vision)**
