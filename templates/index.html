@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Two-Way Real-Time Sign Language Interpretation System — communicate seamlessly between signing and typing users.">
+    <title>SignBridge — Real-Time Sign Language Interpreter</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- ═══════════════════════ HEADER ═══════════════════════ -->
+    <header id="app-header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">🤟</span>
+                <h1>Sign<span class="accent">Bridge</span></h1>
+            </div>
+            <div class="connection-badge" id="connection-badge">
+                <span class="dot"></span>
+                <span class="label">Connecting…</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════ MAIN GRID ═══════════════════════ -->
+    <main id="app-main">
+
+        <!-- ────────── LEFT: Sign-to-Text ────────── -->
+        <section class="panel" id="sign-to-text-panel">
+            <div class="panel-header">
+                <h2>📷 Sign → Text</h2>
+                <p class="subtitle">Show signs to the camera and see them translated in real time</p>
+            </div>
+
+            <div class="video-container" id="video-container">
+                <video id="webcam" autoplay playsinline muted></video>
+                <canvas id="capture-canvas" style="display:none;"></canvas>
+
+                <!-- Overlay: detected letter + confidence -->
+                <div class="video-overlay" id="video-overlay">
+                    <span class="detected-letter" id="detected-letter">—</span>
+                </div>
+
+                <!-- Overlay: hand status -->
+                <div class="hand-status" id="hand-status">
+                    <span class="dot red"></span> No hand detected
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <button class="btn btn-primary" id="btn-camera-toggle">
+                    <span class="btn-icon">🎥</span> Start Camera
+                </button>
+                <button class="btn btn-ghost" id="btn-clear-transcript">
+                    <span class="btn-icon">🗑️</span> Clear
+                </button>
+            </div>
+
+            <div class="transcript-box" id="transcript-box">
+                <h3>Transcript</h3>
+                <div class="transcript-content" id="transcript-content">
+                    <span class="placeholder">Detected signs will appear here…</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ────────── RIGHT: Text-to-Sign ────────── -->
+        <section class="panel" id="text-to-sign-panel">
+            <div class="panel-header">
+                <h2>✋ Text → Sign</h2>
+                <p class="subtitle">Type a message and the robotic hand will sign it for you</p>
+            </div>
+
+            <div class="chat-area" id="chat-area">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="system-msg">
+                        Welcome! Type a word or phrase below and press <strong>Send</strong> to have
+                        the robotic hand spell it out.
+                    </div>
+                </div>
+            </div>
+
+            <div class="robot-status-bar" id="robot-status-bar">
+                <div class="robot-status-inner">
+                    <span class="status-icon" id="robot-status-icon">🤖</span>
+                    <span class="status-text" id="robot-status-text">Idle — ready to sign</span>
+                </div>
+                <div class="letter-progress" id="letter-progress"></div>
+            </div>
+
+            <div class="phrase-buttons" id="phrase-buttons">
+                <span class="phrase-label">Quick phrases:</span>
+                <button class="btn btn-phrase" data-phrase="HELLO">Hello</button>
+                <button class="btn btn-phrase" data-phrase="HI">Hi</button>
+                <button class="btn btn-phrase" data-phrase="HOW ARE YOU">How are you</button>
+                <button class="btn btn-phrase" data-phrase="THANK YOU">Thank you</button>
+                <button class="btn btn-phrase" data-phrase="GOOD">Good</button>
+                <button class="btn btn-phrase" data-phrase="YES">Yes</button>
+                <button class="btn btn-phrase" data-phrase="NO">No</button>
+                <button class="btn btn-phrase" data-phrase="I LOVE YOU">I love you</button>
+                <button class="btn btn-phrase" data-phrase="PLEASE">Please</button>
+                <button class="btn btn-phrase" data-phrase="SORRY">Sorry</button>
+                <button class="btn btn-phrase" data-phrase="HELP">Help</button>
+                <button class="btn btn-phrase" data-phrase="STOP">Stop</button>
+                <button class="btn btn-phrase" data-phrase="MORE">More</button>
+                <button class="btn btn-phrase" data-phrase="WAIT">Wait</button>
+                <!-- [Task 8] New phrase buttons -->
+                <button class="btn btn-phrase" data-phrase="GOOD MORNING">Good morning</button>
+                <button class="btn btn-phrase" data-phrase="GOOD NIGHT">Good night</button>
+                <button class="btn btn-phrase" data-phrase="NICE TO MEET YOU">Nice to meet you</button>
+            </div>
+
+            <form class="chat-input-row" id="chat-form">
+                <button type="button" class="btn btn-mic" id="btn-mic" title="Voice input">
+                    <span class="btn-icon">🎙️</span>
+                </button>
+                <input
+                    type="text"
+                    id="chat-input"
+                    class="chat-input"
+                    placeholder="Type or speak a word to sign…"
+                    autocomplete="off"
+                    maxlength="100"
+                >
+                <button type="submit" class="btn btn-accent" id="btn-send">
+                    <span class="btn-icon">🚀</span> Send
+                </button>
+            </form>
+
+            <!-- Finger visualiser -->
+            <div class="hand-visualiser" id="hand-visualiser">
+                <h3>Robot Hand</h3>
+                <div class="fingers-row">
+                    <div class="finger" id="vis-thumb"><span class="finger-label">Thumb</span><div class="finger-bar"></div></div>
+                    <div class="finger" id="vis-index"><span class="finger-label">Index</span><div class="finger-bar"></div></div>
+                    <div class="finger" id="vis-middle"><span class="finger-label">Middle</span><div class="finger-bar"></div></div>
+                    <div class="finger" id="vis-ring"><span class="finger-label">Ring</span><div class="finger-bar"></div></div>
+                    <div class="finger" id="vis-pinky"><span class="finger-label">Pinky</span><div class="finger-bar"></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+    <footer id="app-footer">
+        <p>SignBridge — Two-Way Real-Time Sign Language Interpretation System</p>
+    </footer>
+
+    <!-- Socket.IO Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <!-- App JS -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

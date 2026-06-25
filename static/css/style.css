@@ -1,0 +1,709 @@
+/* ═══════════════════════════════════════════════════════════════
+   SignBridge — style.css
+   Dark-mode glassmorphism design with cyan-violet accent gradients.
+
+   Changes applied:
+     [Task 1.4] Added .btn-mic.listening class with pulse-red animation
+                for visual "recording in progress" feedback.
+     [Task 6]   Added white-space: pre-wrap to .transcript-content
+                so spaces between words display correctly.
+     [Iteration 1] Fixed connection badge CSS — removed conflicting
+                   ::after pseudo-element approach that broke JS textContent
+                   updates. Now relies purely on JS for label text.
+     [Iteration 3] Added .btn-mic:disabled override to stop animation
+                   when mic is disabled during signing.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Reset & Base ─────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    /* Palette */
+    --bg-deep:        #0b0e17;
+    --bg-surface:     #111827;
+    --bg-glass:       rgba(17, 24, 39, .55);
+    --border-glass:   rgba(255, 255, 255, .08);
+    --border-glow:    rgba(56, 189, 248, .35);
+
+    --text-primary:   #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted:     #475569;
+
+    --accent-cyan:    #38bdf8;
+    --accent-violet:  #a78bfa;
+    --accent-gradient: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+
+    --success:        #34d399;
+    --warning:        #fbbf24;
+    --danger:         #f87171;
+
+    /* Spacing */
+    --gap: 1.25rem;
+    --radius: 16px;
+    --radius-sm: 10px;
+
+    /* Font */
+    --font: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html {
+    font-size: 15px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font);
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Subtle animated bg gradient */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 50% at 15% 20%, rgba(56, 189, 248, .08), transparent),
+        radial-gradient(ellipse 50% 40% at 85% 80%, rgba(167, 139, 250, .08), transparent);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* ── Header ───────────────────────────────────────────── */
+#app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(18px) saturate(1.6);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    background: var(--bg-glass);
+    border-bottom: 1px solid var(--border-glass);
+    padding: .9rem 1.5rem;
+}
+
+.header-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.logo-icon { font-size: 1.7rem; }
+
+.logo h1 {
+    font-weight: 800;
+    font-size: 1.45rem;
+    letter-spacing: -.03em;
+}
+
+.logo .accent {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Connection badge
+   [Iteration 1] Label text is set by JS (textContent). The CSS only
+   styles the dot colour based on .connected class. No ::after trick. */
+.connection-badge {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,.04);
+    padding: .35rem .75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-glass);
+}
+
+.connection-badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--warning);
+    transition: background .3s;
+}
+
+.connection-badge.connected .dot { background: var(--success); }
+
+/* ── Main Grid ────────────────────────────────────────── */
+#app-main {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    max-width: 1440px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--gap);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+    align-items: start;
+}
+
+/* ── Panel (glass card) ───────────────────────────────── */
+.panel {
+    background: var(--bg-glass);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius);
+    padding: var(--gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    transition: border-color .3s;
+}
+
+.panel:hover { border-color: var(--border-glow); }
+
+.panel-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: .25rem;
+}
+
+.panel-header .subtitle {
+    font-size: .82rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* ── Video Container ──────────────────────────────────── */
+.video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #0f172a;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-glass);
+}
+
+#webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);      /* Mirror the feed */
+}
+
+.video-overlay {
+    position: absolute;
+    top: .75rem;
+    right: .75rem;
+    background: rgba(0, 0, 0, .55);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-sm);
+    padding: .4rem .85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.detected-letter {
+    font-size: 2rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    min-width: 2.2rem;
+    text-align: center;
+}
+
+.detected-confidence {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    text-align: center;
+    display: block;
+    margin-top: 2px;
+    min-height: 1em;
+    opacity: 0.85;
+}
+
+.hand-status {
+    position: absolute;
+    bottom: .65rem;
+    left: .75rem;
+    font-size: .75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    background: rgba(0, 0, 0, .5);
+    padding: .3rem .6rem;
+    border-radius: 999px;
+}
+
+.hand-status .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background .3s;
+}
+
+.hand-status .dot.red   { background: var(--danger); }
+.hand-status .dot.green { background: var(--success); }
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn {
+    font-family: var(--font);
+    font-weight: 600;
+    font-size: .85rem;
+    padding: .6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    transition: transform .15s, box-shadow .25s, background .25s;
+}
+
+.btn:active { transform: scale(.97); }
+
+.btn-primary {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(56, 189, 248, .25);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 28px rgba(56, 189, 248, .4);
+}
+
+.btn-primary.active {
+    background: linear-gradient(135deg, var(--danger), #e11d48);
+    box-shadow: 0 4px 20px rgba(248, 113, 113, .3);
+}
+
+.btn-accent {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(167, 139, 250, .25);
+}
+
+.btn-accent:hover {
+    box-shadow: 0 6px 26px rgba(167, 139, 250, .4);
+}
+
+.btn-accent:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.btn-ghost {
+    background: rgba(255,255,255,.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-glass);
+}
+
+.btn-ghost:hover {
+    background: rgba(255,255,255,.1);
+    color: var(--text-primary);
+}
+
+.controls-row {
+    display: flex;
+    gap: .6rem;
+}
+
+/* ── Transcript Box ───────────────────────────────────── */
+.transcript-box {
+    background: rgba(0, 0, 0, .2);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: .85rem 1rem;
+}
+
+.transcript-box h3 {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: .5rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.transcript-content {
+    font-size: 1rem;
+    line-height: 1.7;
+    min-height: 3rem;
+    max-height: 10rem;
+    overflow-y: auto;
+    word-break: break-word;
+    white-space: pre-wrap;  /* [Task 6] Preserve spaces between words */
+    color: var(--text-primary);
+    font-weight: 500;
+    letter-spacing: .04em;
+}
+
+.transcript-content .placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* ── Chat Area ────────────────────────────────────────── */
+.chat-area {
+    flex: 1;
+    min-height: 180px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, .15);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: .85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.system-msg {
+    font-size: .82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    background: rgba(255,255,255,.03);
+    padding: .6rem .8rem;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent-cyan);
+}
+
+.user-msg {
+    align-self: flex-end;
+    background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(167,139,250,.15));
+    border: 1px solid rgba(56,189,248,.2);
+    color: var(--text-primary);
+    padding: .5rem .85rem;
+    border-radius: var(--radius-sm) var(--radius-sm) 4px var(--radius-sm);
+    font-size: .88rem;
+    max-width: 80%;
+    word-break: break-word;
+}
+
+.robot-msg {
+    align-self: flex-start;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border-glass);
+    color: var(--text-secondary);
+    padding: .5rem .85rem;
+    border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 4px;
+    font-size: .85rem;
+    max-width: 80%;
+}
+
+/* ── Robot Status Bar ─────────────────────────────────── */
+.robot-status-bar {
+    background: rgba(0,0,0,.25);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: .65rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+}
+
+.robot-status-inner {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .85rem;
+    color: var(--text-secondary);
+}
+
+.status-icon { font-size: 1.15rem; }
+
+.letter-progress {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.letter-progress .lp-char {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    font-size: .75rem;
+    font-weight: 700;
+    border-radius: 6px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-muted);
+    transition: all .3s;
+    text-transform: uppercase;
+}
+
+.letter-progress .lp-char.done {
+    background: linear-gradient(135deg, rgba(52,211,153,.2), rgba(56,189,248,.2));
+    border-color: rgba(52,211,153,.4);
+    color: var(--success);
+}
+
+.letter-progress .lp-char.active {
+    background: var(--accent-gradient);
+    border-color: var(--accent-cyan);
+    color: #fff;
+    transform: scale(1.15);
+    box-shadow: 0 0 12px rgba(56,189,248,.4);
+}
+
+/* ── Chat Input Row ───────────────────────────────────── */
+.chat-input-row {
+    display: flex;
+    gap: .5rem;
+}
+
+.chat-input {
+    flex: 1;
+    font-family: var(--font);
+    font-size: .9rem;
+    padding: .65rem 1rem;
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, .3);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color .25s, box-shadow .25s;
+}
+
+.chat-input::placeholder { color: var(--text-muted); }
+
+.chat-input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, .15);
+}
+
+/* ── Hand Visualiser ──────────────────────────────────── */
+.hand-visualiser {
+    background: rgba(0, 0, 0, .2);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: .85rem 1rem;
+}
+
+.hand-visualiser h3 {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: .65rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.fingers-row {
+    display: flex;
+    gap: .6rem;
+    justify-content: space-around;
+}
+
+.finger {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .35rem;
+    flex: 1;
+}
+
+.finger-label {
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.finger-bar {
+    width: 100%;
+    height: 38px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--border-glass);
+    position: relative;
+    overflow: hidden;
+    transition: all .35s ease;
+}
+
+.finger-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity .35s;
+}
+
+.finger.extended .finger-bar {
+    border-color: rgba(52,211,153,.4);
+}
+
+.finger.extended .finger-bar::after {
+    background: linear-gradient(180deg, rgba(52,211,153,.35), rgba(56,189,248,.2));
+    opacity: 1;
+}
+
+.finger.half .finger-bar {
+    border-color: rgba(251, 191, 36, .4);
+}
+
+.finger.half .finger-bar::after {
+    background: linear-gradient(180deg, rgba(251,191,36,.35), rgba(245,158,11,.15));
+    opacity: 1;
+}
+
+.finger.closed .finger-bar {
+    border-color: rgba(248,113,113,.3);
+}
+
+.finger.closed .finger-bar::after {
+    background: linear-gradient(180deg, rgba(248,113,113,.25), rgba(248,113,113,.08));
+    opacity: 1;
+}
+
+/* ── Footer ───────────────────────────────────────────── */
+#app-footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 1rem;
+    font-size: .75rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-glass);
+}
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, .2); }
+    50%      { box-shadow: 0 0 20px rgba(56, 189, 248, .45); }
+}
+
+.signing-active { animation: pulse-glow 1.2s ease-in-out infinite; }
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 900px) {
+    #app-main {
+        grid-template-columns: 1fr;
+    }
+
+    .video-container {
+        aspect-ratio: 16 / 9;
+    }
+}
+
+@media (max-width: 480px) {
+    html { font-size: 14px; }
+    .controls-row { flex-direction: column; }
+    .chat-input-row { flex-direction: column; }
+}
+
+/* ── Voice Input (Mic Button) ────────────────────────── */
+.btn-mic {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: .65rem .75rem;
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background .25s, border-color .25s, color .25s, box-shadow .25s;
+}
+
+.btn-mic:hover {
+    background: #283548;
+    border-color: #475569;
+    color: var(--text-primary);
+}
+
+/* [Task 1.4] .listening class — pulsing red recording indicator */
+.btn-mic.listening {
+    background: #f87171;
+    border-color: #f87171;
+    color: #fff;
+    animation: pulse-red 1.4s ease-in-out infinite;
+}
+
+/* [Iteration 3] Disabled state overrides listening animation */
+.btn-mic:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    animation: none;
+}
+
+/* [Task 1.4] pulse-red keyframe animation for mic recording feedback */
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, .45); }
+    50%      { box-shadow: 0 0 18px 4px rgba(248, 113, 113, .55); }
+}
+
+/* ── Phrase Buttons ──────────────────────────────────── */
+.phrase-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.phrase-label {
+    font-size: 12px;
+    color: #475569;
+    font-weight: 500;
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+.btn-phrase {
+    background-color: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-phrase:hover {
+    background-color: #334155;
+    color: #f1f5f9;
+    border-color: #38bdf8;
+}
+
+.btn-phrase:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-phrase.active {
+    background-color: #38bdf8;
+    color: #0b0e17;
+    border-color: #38bdf8;
+}
